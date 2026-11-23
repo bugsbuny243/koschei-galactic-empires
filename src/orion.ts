@@ -25,9 +25,9 @@ sun.intensity = 850;
 
 const planet = MeshBuilder.CreateSphere('orion', { diameter: 7, segments: 64 }, scene);
 const planetMaterial = new StandardMaterial('surface', scene);
-const map = new DynamicTexture('orion-map', { width: 1024, height: 512 }, scene, false);
+const map = new DynamicTexture('orion-map', { width: 512, height: 256 }, scene, false);
 const ctx = map.getContext();
-const W = 1024, H = 512;
+const W = 512, H = 256;
 const image = ctx.getImageData(0, 0, W, H);
 const hash = (x:number,y:number) => {
   const v = Math.sin(x*127.1+y*311.7)*43758.5453;
@@ -65,12 +65,9 @@ atmosphereMat.alpha=.095;
 atmosphereMat.backFaceCulling=false;
 atmosphere.material=atmosphereMat;
 
-const glow=new GlowLayer('glow',scene,{blurKernelSize:32});
-glow.intensity=.4;
+// Glow disabled for initial mobile compatibility.
 
-const stars=MeshBuilder.CreateSphere('stars',{diameter:1,segments:4},scene);
-stars.isVisible=false;
-for(let i=0;i<500;i++){
+for(let i=0;i<100;i++){
   const theta=Math.random()*Math.PI*2;
   const z=Math.random()*2-1;
   const radius=65+Math.random()*30;
@@ -93,5 +90,6 @@ scene.onBeforeRenderObservable.add(()=>{
   atmosphere.rotation.y+=dt*.01;
 });
 engine.runRenderLoop(()=>scene.render());
+scene.executeWhenReady(()=>{const b=document.getElementById('boot');if(b)b.style.display='none';});
 window.addEventListener('resize',()=>engine.resize());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)engine.stopRenderLoop();else engine.runRenderLoop(()=>scene.render());});
