@@ -28,7 +28,7 @@ const planetMaterial = new StandardMaterial('surface', scene);
 const map = new DynamicTexture('orion-map', { width: 1024, height: 512 }, scene, false);
 const ctx = map.getContext();
 const W = 1024, H = 512;
-const image = ctx.createImageData(W, H);
+const image = ctx.getImageData(0, 0, W, H);
 const hash = (x:number,y:number) => {
   const v = Math.sin(x*127.1+y*311.7)*43758.5453;
   return v-Math.floor(v);
