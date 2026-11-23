@@ -1,4 +1,4 @@
-import { Engine, Scene, ArcRotateCamera, Vector3, Color3, Color4, MeshBuilder, StandardMaterial, HemisphericLight, PointLight, Texture, DynamicTexture, GlowLayer } from '@babylonjs/core';
+import { Engine, Scene, ArcRotateCamera, Vector3, Color3, Color4, MeshBuilder, StandardMaterial, HemisphericLight, DirectionalLight, DynamicTexture } from '@babylonjs/core';
 import './orion.css';
 
 const canvas = document.querySelector<HTMLCanvasElement>('#renderCanvas');
@@ -8,9 +8,9 @@ engine.setHardwareScalingLevel(Math.max(1, Math.min(2, window.devicePixelRatio /
 const scene = new Scene(engine);
 scene.clearColor = new Color4(0.008, 0.015, 0.045, 1);
 
-const camera = new ArcRotateCamera('orbit', -Math.PI / 2.5, Math.PI / 2.25, 13, Vector3.Zero(), scene);
+const camera = new ArcRotateCamera('orbit', -Math.PI / 2.5, Math.PI / 2.25, 17, Vector3.Zero(), scene);
 camera.attachControl(canvas, true);
-camera.lowerRadiusLimit = 7;
+camera.lowerRadiusLimit = 10;
 camera.upperRadiusLimit = 27;
 camera.lowerBetaLimit = 0.2;
 camera.upperBetaLimit = Math.PI - 0.2;
@@ -19,9 +19,9 @@ camera.pinchPrecision = 80;
 camera.inertia = 0.78;
 
 const ambient = new HemisphericLight('ambient', new Vector3(0, 1, 0), scene);
-ambient.intensity = 0.38;
-const sun = new PointLight('sun', new Vector3(-12, 7, -9), scene);
-sun.intensity = 850;
+ambient.intensity = 0.25;
+const sun = new DirectionalLight('sun', new Vector3(0.65, -0.35, 0.7), scene);
+sun.intensity = 1.65;
 
 const planet = MeshBuilder.CreateSphere('orion', { diameter: 7, segments: 64 }, scene);
 const planetMaterial = new StandardMaterial('surface', scene);
@@ -54,16 +54,13 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
 }
 ctx.putImageData(image,0,0);map.update();
 planetMaterial.diffuseTexture=map;
-planetMaterial.specularColor=new Color3(.1,.2,.25);
+planetMaterial.specularColor=new Color3(.025,.045,.065);
+planetMaterial.specularPower=80;
+planetMaterial.ambientColor=new Color3(.04,.06,.1);
 planet.material=planetMaterial;
 
-const atmosphere = MeshBuilder.CreateSphere('atmosphere', { diameter: 7.3, segments: 48 }, scene);
-const atmosphereMat = new StandardMaterial('atmosphere', scene);
-atmosphereMat.diffuseColor=new Color3(.02,.3,.8);
-atmosphereMat.emissiveColor=new Color3(.025,.12,.33);
-atmosphereMat.alpha=.095;
-atmosphereMat.backFaceCulling=false;
-atmosphere.material=atmosphereMat;
+// Keep the first mobile release free of a second transparent sphere.
+// A physically inspired Fresnel atmospheric rim can be added later.
 
 // Glow disabled for initial mobile compatibility.
 
@@ -78,8 +75,8 @@ for(let i=0;i<100;i++){
   s.material=m;
 }
 
-const moon=MeshBuilder.CreateSphere('moon',{diameter:1.1,segments:24},scene);
-moon.position.set(8,2.4,1.2);
+const moon=MeshBuilder.CreateSphere('moon',{diameter:0.65,segments:24},scene);
+moon.position.set(7,3,-5);
 const moonMat=new StandardMaterial('moon-mat',scene);
 moonMat.diffuseColor=new Color3(.4,.48,.57);
 moon.material=moonMat;
@@ -87,7 +84,6 @@ moon.material=moonMat;
 scene.onBeforeRenderObservable.add(()=>{
   const dt=Math.min(engine.getDeltaTime()/1000,.05);
   planet.rotation.y+=dt*.025;
-  atmosphere.rotation.y+=dt*.01;
 });
 engine.runRenderLoop(()=>scene.render());
 scene.executeWhenReady(()=>{const b=document.getElementById('boot');if(b)b.style.display='none';});
